@@ -12,6 +12,6 @@ setup(
     python_requires=">=3.7",
     author="Opera von der Vollmer",
     description="PSO2 Log Handler that reads chat messages",
-    url="https://github.com/OperavonderVollmer/LogFileMonitor", 
+    url="https://github.com/OperavonderVollmer/PSO2-Log-Handler", 
     license="MIT",
 )

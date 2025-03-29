@@ -48,6 +48,16 @@ def filter_id(id_: str) -> bool:
 
 def process_logs(line: str, verbose: bool = False) -> str:
     
+    """
+    Process a single log line and return the processed message if any.
+
+    Args:
+        line (str): The log line to process.
+        verbose (bool, optional): Whether to print the log line details. Defaults to False.
+
+    Returns:
+        str: The processed message if any, otherwise None.
+    """
     global CURRENT_CONTEXT
 
     log_string = line.split('\t')
@@ -112,6 +122,25 @@ def speak_thread(TTS: opsm.TTS_Model) -> None:
             time.sleep(5)
 
 def quickstart_lfm() -> None:
+
+    """
+    Starts the quickstart wizard for Log File Monitor.
+    This function starts the quickstart wizard for Log File Monitor, which allows the user to quickly create a new monitor. 
+    The user is prompted to select a path from the list of saved paths, and then to enter the monitor name, offset, and encoding. 
+    The wizard then adds the monitor to the list of quickstart monitors and saves it to the quickstart.json file. 
+    If the user chooses not to add the monitor, the wizard will exit. 
+    If the user chooses to add the monitor, the wizard will add it to the list of quickstart monitors and save it to the quickstart.json file.
+
+    Parameters
+    ----------
+
+    None
+
+    Returns
+    -------
+
+    None
+    """
 
     if not DEBUG_MODE:
         os.system('cls')
