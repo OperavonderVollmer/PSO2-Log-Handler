@@ -1,3 +1,4 @@
 @ echo off
-call .\.venv\Scripts\activate.bat
-python .\PSO2LogHandler\PSO2LogHandler.py
+title PSO2 Log Monitor
+call B:\Records\Programming\Python\PSO2-Log-Handler\.venv\Scripts\activate.bat
+python B:\Records\Programming\Python\PSO2-Log-Handler\PSO2LogHandler\PSO2LogHandler.py

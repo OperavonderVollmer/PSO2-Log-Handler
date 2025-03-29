@@ -9,11 +9,12 @@ import time
 import threading
 
 def initialize() -> None:    
-    opr.print_from("PSO2 Log Handler - Initialize", "Starting PSO2 Log Handler...")
+    opr.print_from("PSO2 Log Handler - Initialize", "Starting PSO2 Log Handler...", 1)
     lfm.initialize(os.path.abspath(__file__))
     ops.initialize(filepath=os.path.abspath(__file__))
 
 def deinitialize() -> None:
+    os.system('cls')
     opr.print_from("PSO2 Log Handler - Deinitialize", "Stopping PSO2 Log Handler...")
     lfm.deinitialize()
     ops.deinitialize()
@@ -60,21 +61,17 @@ def process_logs(line: str, verbose: bool = False) -> str:
     """
     global CURRENT_CONTEXT
 
-    log_string = line.split('\t')
+    log_string = line[0].split('\t')
     
-    date, id_, context, msg_id, sender, msg = log_string
+    date, msg_id, context, sender_id, sender, msg = log_string
 
     if verbose:
-        print(f"Date: {date} | ID: {id_} | Context: {context} | Msg ID: {msg_id} | Sender: {sender} | Msg: {msg}")
+        print(f"Date: {date} | ID: {sender_id} | Context: {context} | Msg ID: {msg_id} | Sender: {sender} | Msg: {msg}")
 
-    if not filter_context(context):
+    if not filter_context(context.strip()) or not filter_id(sender_id.strip()) or not filter_users(sender.strip()):
+        opr.print_from("PSO2 Log Handler - Main", f"Filtered Message: {msg}", 1)
         return
 
-    if not filter_users(sender):
-        return
-    
-    if not filter_id(id_):
-        return
 
     message = f"{sender} "
 
@@ -126,7 +123,7 @@ def quickstart_lfm() -> None:
     """
     Starts the quickstart wizard for Log File Monitor.
     This function starts the quickstart wizard for Log File Monitor, which allows the user to quickly create a new monitor. 
-    The user is prompted to select a path from the list of saved paths, and then to enter the monitor name, offset, and encoding. 
+    The user is prompted to select a path from the list of saved paths, and then to enter the monitor name,and encoding. 
     The wizard then adds the monitor to the list of quickstart monitors and saves it to the quickstart.json file. 
     If the user chooses not to add the monitor, the wizard will exit. 
     If the user chooses to add the monitor, the wizard will add it to the list of quickstart monitors and save it to the quickstart.json file.
@@ -150,7 +147,7 @@ def quickstart_lfm() -> None:
     quickstart = opr.load_json("PSO2 Log Handler - Quickstart", os.path.dirname(os.path.abspath(__file__)), "quickstart.json")
 
     while True:
-        decision = opr.input_from("PSO2 Log Handler - Quickstart", f"There are {len(quickstart)} quickstart monitors configured. Would you like to create a quickstart? (y/n)")
+        decision = opr.input_from("PSO2 Log Handler - Quickstart", f"\nThere are {len(quickstart)} quickstart monitors configured. \n\nWould you like to create a quickstart? (y/n)")
         if decision.lower() == "y":
             while True:
                 name = opr.input_from("PSO2 Log Handler - Quickstart Wizard | Add", "Monitor Name")
@@ -179,20 +176,12 @@ def quickstart_lfm() -> None:
 
                 encoding = ["utf-8", "utf-16", "utf-32"][int(en_choice) - 1]
                 
-                while True:
-                    offset = opr.input_from("LogFileMonitor - Wizard | Add", "Please enter a number for the offset")
-                    if offset.isdigit():                
-                        break
-                    opr.print_from("LogFileMonitor - Wizard | Add", "Invalid input")
-                if int(offset) > 0:
-                    offset = int(offset) * -1
 
-
-                opr.print_from("PSO2 Log Handler - Quickstart Wizard | Add", f"Name: {name} | Path: {path} | Offset: {offset} | Encoding: {encoding}")                
+                opr.print_from("PSO2 Log Handler - Quickstart Wizard | Add", f"Name: {name} | Path: {path} | Encoding: {encoding}")                
 
                 decision = opr.input_from("PSO2 Log Handler - Quickstart Wizard | Add", "Is this correct? (y/n)")
                 if decision.lower() == "y":            
-                    quickstart[len(quickstart) + 1] = {"name": name, "path": path, "offset": offset, "encoding": encoding}
+                    quickstart[len(quickstart) + 1] = {"name": name, "path": path, "encoding": encoding}
                     opr.save_json("PSO2 Log Handler - Quickstart", os.path.dirname(os.path.abspath(__file__)), quickstart, "quickstart.json")    
 
         else:
@@ -201,33 +190,43 @@ def quickstart_lfm() -> None:
     
     if quickstart:
         for monitor in quickstart.values():
-            opr.print_from("PSO2 Log Handler - Quickstart", f"Quickstart Monitor: {monitor['name']} | {monitor['path']} | {monitor['offset']} | {monitor['encoding']}", 1)
-            decision = opr.input_from("PSO2 Log Handler - Quickstart", "Do you want to add this monitor? (y/n)")
+            opr.print_from("PSO2 Log Handler - Quickstart", f"Quickstart Monitor: {monitor['name']} | {monitor['path']} | {monitor['encoding']}", 1)
+            decision = opr.input_from("PSO2 Log Handler - Quickstart", "Do you want to start this monitor? (y/n)")
             if decision.lower() == "y":
-                lfm._add_monitor(mode="2", name=monitor["name"], path=monitor["path"], _offset=monitor["offset"], _encoding=monitor["encoding"])
+                lfm._add_monitor(mode="2", name=monitor["name"], path=monitor["path"], _encoding=monitor["encoding"])
 
 CURRENT_CONTEXT = ""
 BLACKLIST_CONTEXT = ["PUBLIC"]
 BLACKLIST_USERS = []
 BLACKLIST_ID = ["11618426"]
-SPEAK_THREAD = None
 DEBUG_MODE = False
+
+
+SPEAK_THREAD = None
 
 if __name__ == "__main__":
 
     initialize()
-    quickstart_lfm()
-    
-    TTS = opsm.TTS_Factory(ops.OUTPUT_DEVICE[0], "1")
+    try:
+        quickstart_lfm()
+        
+        TTS = opsm.TTS_Factory(ops.OUTPUT_DEVICE[0], "1")
 
-    TTS.Start()
+        TTS.Start()
 
-    SPEAK_THREAD = threading.Thread(target=speak_thread, daemon=True, args=(TTS,))
-    SPEAK_THREAD.start()
-    
-    time.sleep(1)
+        SPEAK_THREAD = threading.Thread(target=speak_thread, daemon=True, args=(TTS,))
+        SPEAK_THREAD.start()
+        
+        time.sleep(2)
 
-    lfm.wizard_interface()
+        lfm.wizard_interface()
 
-    TTS.Stop()
+        TTS.Stop()
+
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        error_message = traceback.format_exc()
+        opr.print_from("PSO2 Log Handler - Main", f"FAILED: Unexpected Error: {error_message}")
+        
     deinitialize()
