@@ -1,0 +1,5 @@
+git+https://github.com/OperavonderVollmer/Log-File-Monitor.git@main
+git+https://github.com/OperavonderVollmer/OPR-Speaks.git@main
+git+https://github.com/OperavonderVollmer/OperaPowerRelay.git
+
+
