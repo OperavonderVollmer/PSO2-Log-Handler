@@ -7,6 +7,8 @@ import os
 import traceback
 import time
 import threading
+import re
+
 
 def initialize() -> None:    
     opr.print_from("PSO2 Log Handler - Initialize", "Starting PSO2 Log Handler...", 1)
@@ -31,6 +33,19 @@ def get_output_queue() -> Iterator[str]:
             opr.print_from("OPR-Speaks - Main", f"FAILED: Unexpected Error: {error_message}")
             break
 
+
+
+def filter_message(message: str) -> str:
+    while True:
+        for criteria in FILTER_CRITERIA:
+            match = re.match(criteria, message)
+            if match:
+                message = message[len(match.group()):].strip()  
+                break  
+        else:
+            break 
+
+    return message.strip()
 
 def filter_users(user: str) -> bool:
     if user in BLACKLIST_USERS:
@@ -69,9 +84,14 @@ def process_logs(line: str, verbose: bool = False) -> str:
         print(f"Date: {date} | ID: {sender_id} | Context: {context} | Msg ID: {msg_id} | Sender: {sender} | Msg: {msg}")
 
     if not filter_context(context.strip()) or not filter_id(sender_id.strip()) or not filter_users(sender.strip()):
-        opr.print_from("PSO2 Log Handler - Main", f"Filtered Message: {msg}", 1)
+        opr.print_from("PSO2 Log Handler - Main", f"Filtered Message: {msg}Reason: \033[31mBlacklisted source\033[0m")
         return
 
+    smsg = filter_message(msg)
+
+    if not smsg:
+        opr.print_from("PSO2 Log Handler - Main", f"Filtered Message: {msg}Reason: \033[31mEmpty message after filtering\033[0m")
+        return
 
     message = f"{sender} "
 
@@ -79,7 +99,7 @@ def process_logs(line: str, verbose: bool = False) -> str:
         CURRENT_CONTEXT = context
         message += f"from {context} chat "
 
-    message += f"says {msg}"
+    message += f"says {smsg}"
 
     opr.print_from("PSO2 Log Handler - Main", f"Processed Message: {message}")
     return message
@@ -198,7 +218,26 @@ def quickstart_lfm() -> None:
 CURRENT_CONTEXT = ""
 BLACKLIST_CONTEXT = ["PUBLIC"]
 BLACKLIST_USERS = []
-BLACKLIST_ID = ["11618426"]
+BLACKLIST_ID = [] #["11618426"]
+FILTER_CRITERIA = [
+    r"^/uioff(?:\s\d+)?", 
+    r"^/ci\d+\s\d+",
+    r"^/stamp\s\d+",
+    r"^/toge",
+    r"^/moya",
+    r"^/(?:la|cla|mla|fla)\s\w+(?:\s(?:ha|rha|lha)\s\w+)?(?:\ss\s\d+(?:\.\d+)?)?",
+    r"^/la\s(?:hsi1|hsi2)",
+    r"^/(?:fc|face)(?:\d|\s\w+)?(?:\ss\s\d+(?:\.\d+)?)?",
+    r"^/ce(?:\d|\s\w+)?(?:\ss\s\d+(?:\.\d+)?)?",
+    r"^/cf(?:(?:\s(?:on|off|all|sync|stop|rev|s\d(?:\.\d+)?|[hvd]-?\d+)){1,6})?",
+    r"^/mn\d+",
+    r"^/ceall(?:\s(?:on|off))?",
+    r"^{\w+\}"
+]
+
+
+
+
 DEBUG_MODE = False
 
 
