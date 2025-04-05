@@ -97,7 +97,7 @@ def process_logs(line: str, verbose: bool = False) -> str:
 
     if CURRENT_CONTEXT != context:
         CURRENT_CONTEXT = context
-        message += f"from {context} chat "
+        message += f"from {context.lower()} chat "
 
     message += f"says {smsg}"
 
@@ -120,8 +120,12 @@ def speak_thread(TTS: opsm.TTS_Model) -> None:
 
                 processed = process_logs(line)
 
+
                 if processed:
                     TTS.Say(processed)
+
+                if WILL_LIST:
+                    PROCESSED_MESSAGES.append(processed)
 
         except KeyboardInterrupt:
             break
@@ -218,7 +222,11 @@ def quickstart_lfm() -> None:
 CURRENT_CONTEXT = ""
 BLACKLIST_CONTEXT = ["PUBLIC"]
 BLACKLIST_USERS = []
-BLACKLIST_ID = [] #["11618426"]
+BLACKLIST_ID = ["11618426"]
+PROCESSED_MESSAGES = []
+WILL_LIST = False
+
+
 FILTER_CRITERIA = [
     r"^/uioff(?:\s\d+)?", 
     r"^/ci\d+\s\d+",
@@ -232,7 +240,8 @@ FILTER_CRITERIA = [
     r"^/cf(?:(?:\s(?:on|off|all|sync|stop|rev|s\d(?:\.\d+)?|[hvd]-?\d+)){1,6})?",
     r"^/mn\d+",
     r"^/ceall(?:\s(?:on|off))?",
-    r"^{\w+\}"
+    r"^{\w+\}",
+    r"^/ms\d+",
 ]
 
 
