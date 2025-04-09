@@ -35,3 +35,14 @@
 ```sh
 pip install git+https://github.com/OperavonderVollmer/PSO2-Log-Handler
 ```
+
+## Usage
+
+### Running the script
+
+1. Double click the PSO2LogHandler.bat file
+2. Create a monitor and add its configurations
+3. Start the monitor
+4. ???
+5. Profit
+   
