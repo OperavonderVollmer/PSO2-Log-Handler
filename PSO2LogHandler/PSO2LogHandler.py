@@ -8,6 +8,7 @@ import traceback
 import time
 import threading
 import re
+import sys
 
 
 def initialize() -> None:    
@@ -75,6 +76,7 @@ def process_logs(line: str, verbose: bool = False) -> str:
         str: The processed message if any, otherwise None.
     """
     global CURRENT_CONTEXT
+    global CURRENT_SPEAKER
 
     log_string = line[0].split('\t')
     
@@ -93,7 +95,12 @@ def process_logs(line: str, verbose: bool = False) -> str:
         opr.print_from("PSO2 Log Handler - Main", f"Filtered Message: {msg}Reason: \033[31mEmpty message after filtering\033[0m")
         return
 
-    message = f"{sender} "
+    message = ""
+
+    if CURRENT_SPEAKER != sender:
+        CURRENT_SPEAKER = sender
+
+        message = f"{sender} "
 
     if CURRENT_CONTEXT != context:
         CURRENT_CONTEXT = context
@@ -220,6 +227,7 @@ def quickstart_lfm() -> None:
                 lfm._add_monitor(mode="2", name=monitor["name"], path=monitor["path"], _encoding=monitor["encoding"])
 
 CURRENT_CONTEXT = ""
+CURRENT_SPEAKER = ""
 BLACKLIST_CONTEXT = ["PUBLIC"]
 BLACKLIST_USERS = []
 BLACKLIST_ID = ["11618426"]
@@ -231,6 +239,7 @@ FILTER_CRITERIA = [
     r"^/uioff(?:\s\d+)?", 
     r"^/ci\d+\s\d+",
     r"^/stamp\s\d+",
+    r"^/vo\s\d+",
     r"^/toge",
     r"^/moya",
     r"^/(?:la|cla|mla|fla)\s\w+(?:\s(?:ha|rha|lha)\s\w+)?(?:\ss\s\d+(?:\.\d+)?)?",
@@ -278,3 +287,4 @@ if __name__ == "__main__":
         opr.print_from("PSO2 Log Handler - Main", f"FAILED: Unexpected Error: {error_message}")
         
     deinitialize()
+    sys.exit(0)
